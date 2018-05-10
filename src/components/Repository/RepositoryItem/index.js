@@ -9,7 +9,7 @@ import {
   STAR_REPOSITORY,
   UN_STAR_REPOSITORY,
   WATCH_REPOSITORY
-} from './mutations';
+} from '../mutations';
 
 import REPOSITORY_FRAGMENT from '../fragments';
 
@@ -62,28 +62,15 @@ const updateAddStar = (
   {
     data: {
       addStar: {
-        starrable: { id }
+        starrable: { id, viewerHasStarred }
       }
     }
   }
 ) => {
-  const repository = client.readFragment({
-    id: `Repository:${id}`,
-    fragment: REPOSITORY_FRAGMENT
-  });
-
-  const totalCount = repository.stargazers.totalCount + 1;
-
   client.writeFragment({
     id: `Repository:${id}`,
     fragment: REPOSITORY_FRAGMENT,
-    data: {
-      ...repository,
-      stargazers: {
-        ...repository.stargazers,
-        totalCount
-      }
-    }
+    data: getUpdateStarData(client, id, viewerHasStarred)
   });
 };
 
@@ -92,29 +79,34 @@ const updateRemoveStar = (
   {
     data: {
       removeStar: {
-        starrable: { id }
+        starrable: { id, viewerHasStarred }
       }
     }
   }
 ) => {
+  client.writeFragment({
+    id: `Repository:${id}`,
+    fragment: REPOSITORY_FRAGMENT,
+    data: getUpdateStarData(client, id, viewerHasStarred)
+  });
+};
+
+const getUpdateStarData = (client, id, viewerHasStarred) => {
   const repository = client.readFragment({
     id: `Repository:${id}`,
     fragment: REPOSITORY_FRAGMENT
   });
 
-  const totalCount = repository.stargazers.totalCount - 1;
+  let { totalCount } = repository.stargazers;
+  totalCount = viewerHasStarred ? totalCount + 1 : totalCount - 1;
 
-  client.writeFragment({
-    id: `Repository:${id}`,
-    fragment: REPOSITORY_FRAGMENT,
-    data: {
-      ...repository,
-      stargazers: {
-        ...repository.stargazers,
-        totalCount
-      }
+  return {
+    ...repository,
+    stargazers: {
+      ...repository.stargazers,
+      totalCount
     }
-  });
+  };
 };
 
 const RepositoryItem = ({
