@@ -35,7 +35,7 @@ const RepositoryItem = ({
 
       <div className="RepositoryItem-description-details">
         <Fragment>
-          {primaryLanguage && <span>Language: {primaryLanguage.name}</span>}
+          {primaryLanguage && <span>Language: {primaryLanguage.name} </span>}
 
           {owner && (
             <span>
