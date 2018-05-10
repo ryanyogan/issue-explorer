@@ -1,11 +1,16 @@
 /* eslint-disable react/no-danger */
 import React, { Fragment } from 'react';
+import { Mutation } from 'react-apollo';
 
 import Link from '../../Link';
+import Button from '../../Button';
+
+import { STAR_REPOSITORY, UN_STAR_REPOSITORY } from './mutations';
 
 import '../style.css';
 
 const RepositoryItem = ({
+  id,
   name,
   url,
   descriptionHTML,
@@ -22,8 +27,30 @@ const RepositoryItem = ({
         <Link href={url}>{name}</Link>
       </h2>
 
-      <div className="RepositoryItem-title-action">
-        {stargazers.totalCount} Stars
+      <div>
+        {!viewerHasStarred ? ( // we prefix with ! as we want to see the buttons for now
+          <Mutation mutation={STAR_REPOSITORY} variables={{ id }}>
+            {(addStar, { data, loading, error }) => (
+              <Button
+                className={`RepositoryItem-title-action`}
+                onClick={addStar}
+              >
+                {stargazers.totalCount} Star(s)
+              </Button>
+            )}
+          </Mutation>
+        ) : (
+          <Mutation mutation={UN_STAR_REPOSITORY} variables={{ id }}>
+            {(removeStar, { data, loading, error }) => (
+              <Button
+                className={`RepositoryItem-title-action`}
+                onClick={removeStar}
+              >
+                {stargazers.totalCount} Star(s)
+              </Button>
+            )}
+          </Mutation>
+        )}
       </div>
     </div>
 
