@@ -13,7 +13,20 @@ const GET_CURRENT_USER = gql`
 
 const Profile = () => (
   <Query query={GET_CURRENT_USER}>
-    {() => <div>Profile, notice the Render Prop pattern?</div>}
+    {({ data }) => {
+      // We are now using a functional pattern, returning JSX back
+      const { viewer } = data;
+
+      if (!viewer) {
+        return null;
+      }
+
+      return (
+        <div>
+          {viewer.name} {viewer.login}
+        </div>
+      );
+    }}
   </Query>
 );
 
