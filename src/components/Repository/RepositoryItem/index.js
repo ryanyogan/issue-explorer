@@ -40,6 +40,36 @@ const updateAddStar = (
   });
 };
 
+const updateRemoveStar = (
+  client,
+  {
+    data: {
+      removeStar: {
+        starrable: { id }
+      }
+    }
+  }
+) => {
+  const repository = client.readFragment({
+    id: `Repository:${id}`,
+    fragment: REPOSITORY_FRAGMENT
+  });
+
+  const totalCount = repository.stargazers.totalCount - 1;
+
+  client.writeFragment({
+    id: `Repository:${id}`,
+    fragment: REPOSITORY_FRAGMENT,
+    data: {
+      ...repository,
+      stargazers: {
+        ...repository.stargazers,
+        totalCount
+      }
+    }
+  });
+};
+
 const RepositoryItem = ({
   id,
   name,
@@ -75,7 +105,11 @@ const RepositoryItem = ({
             )}
           </Mutation>
         ) : (
-          <Mutation mutation={UN_STAR_REPOSITORY} variables={{ id }}>
+          <Mutation
+            mutation={UN_STAR_REPOSITORY}
+            variables={{ id }}
+            update={updateRemoveStar}
+          >
             {(removeStar, { data, loading, error }) => (
               <Button
                 className={`RepositoryItem-title-action`}
