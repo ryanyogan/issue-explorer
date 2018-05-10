@@ -12,7 +12,7 @@ import App from './App';
 // TODO: Move to constants dir
 const tempUri = 'https://api.github.com/graphql';
 
-const httpLink = new httpLink({
+const httpLink = new HttpLink({
   uri: tempUri,
   headers: {
     authorization: `Bearer ${process.env.REACT_APP_GITHUB_ACCESS_TOKEN}`
