@@ -13,12 +13,12 @@ const GET_CURRENT_USER = gql`
 
 const Profile = () => (
   <Query query={GET_CURRENT_USER}>
-    {({ data }) => {
+    {({ data, loading }) => {
       // We are now using a functional pattern, returning JSX back
       const { viewer } = data;
 
-      if (!viewer) {
-        return null;
+      if (loading || !viewer) {
+        return <div>Loading...</div>;
       }
 
       return (
