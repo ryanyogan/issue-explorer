@@ -1,6 +1,5 @@
 import React, { Fragment } from 'react';
 
-import Loading from '../../Loading';
 import FetchMore from '../../FetchMore';
 import RepositoryItem from '../RepositoryItem';
 
