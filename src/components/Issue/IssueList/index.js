@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Fragment } from 'react';
 import { Query } from 'react-apollo';
 import { withState } from 'recompose';
 
@@ -10,6 +10,7 @@ import ErrorMessage from '../../Error';
 import { ButtonUnobtrusive } from '../../Button';
 
 import './style.css';
+import FetchMore from '../../FetchMore';
 
 // The worlds most naive state machine :)
 const ISSUE_STATES = {
@@ -49,8 +50,9 @@ const Issues = ({
       <Query
         query={GET_ISSUES_OF_REPOSITORY}
         variables={{ repositoryName, repositoryOwner, issueState }}
+        notifyOnNetworkStatusChange
       >
-        {({ data, loading, error }) => {
+        {({ data, loading, error, fetchMore }) => {
           if (error) {
             return <ErrorMessage error={error} />;
           }
@@ -65,19 +67,60 @@ const Issues = ({
             return <div className="IssueList">No issues ...</div>;
           }
 
-          return <IssueList issues={repository.issues} />;
+          return (
+            <IssueList
+              issues={repository.issues}
+              loading={loading}
+              fetchMore={fetchMore}
+            />
+          );
         }}
       </Query>
     )}
   </div>
 );
 
-const IssueList = ({ issues }) => (
-  <div className="IssueList">
-    {issues.edges.map(({ node: issue }) => (
-      <IssueItem key={issue.id} issue={issue} />
-    ))}
-  </div>
+const updateQuery = (previousResult, { fetchMoreResult }) => {
+  if (!fetchMoreResult) {
+    return previousResult;
+  }
+
+  return {
+    ...previousResult,
+    repository: {
+      ...previousResult.repository,
+      issues: {
+        ...previousResult.repository.issues,
+        ...fetchMoreResult.repository.issues,
+        edges: [
+          ...previousResult.repository.issues.edges,
+          ...fetchMoreResult.repository.issues.edges,
+        ],
+      },
+    },
+  };
+};
+
+const IssueList = ({ issues, loading, fetchMore }) => (
+  <Fragment>
+    <div className="IssueList">
+      {issues.edges.map(({ node: issue }) => (
+        <IssueItem key={issue.id} issue={issue} />
+      ))}
+    </div>
+
+    <FetchMore
+      loading={loading}
+      hasNextPage={issues.pageInfo.hasNextPage}
+      variables={{
+        cursor: issues.pageInfo.endCursor,
+      }}
+      updateQuery={updateQuery}
+      fetchMore={fetchMore}
+    >
+      Issues
+    </FetchMore>
+  </Fragment>
 );
 
 export default withState('issueState', 'onChangeIssueState', ISSUE_STATES.NONE)(
