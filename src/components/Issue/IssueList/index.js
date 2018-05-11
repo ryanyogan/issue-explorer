@@ -73,6 +73,9 @@ const Issues = ({
               issues={repository.issues}
               loading={loading}
               fetchMore={fetchMore}
+              repositoryOwner={repositoryOwner}
+              repositoryName={repositoryName}
+              issueState={issueState}
             />
           );
         }}
@@ -147,11 +150,23 @@ const updateQuery = (previousResult, { fetchMoreResult }) => {
   };
 };
 
-const IssueList = ({ issues, loading, fetchMore }) => (
+const IssueList = ({
+  issues,
+  loading,
+  fetchMore,
+  repositoryOwner,
+  repositoryName,
+  issueState,
+}) => (
   <Fragment>
     <div className="IssueList">
       {issues.edges.map(({ node: issue }) => (
-        <IssueItem key={issue.id} issue={issue} />
+        <IssueItem
+          key={issue.id}
+          issue={issue}
+          repositoryOwner={repositoryOwner}
+          repositoryName={repositoryName}
+        />
       ))}
     </div>
 
@@ -160,6 +175,9 @@ const IssueList = ({ issues, loading, fetchMore }) => (
       hasNextPage={issues.pageInfo.hasNextPage}
       variables={{
         cursor: issues.pageInfo.endCursor,
+        repositoryOwner,
+        repositoryName,
+        issueState,
       }}
       updateQuery={updateQuery}
       fetchMore={fetchMore}
